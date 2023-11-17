@@ -46,6 +46,7 @@ class FrameMapper:
                 model_name, pretrained=pretrained, device=device
             )
             tokenizer = open_clip.get_tokenizer(oc_model_name) if get_text_tokenizer else None
+            img_size = preprocess.transforms[0].size
             preprocess.transforms = [ToPILImage()] + preprocess.transforms[-3:]
         else:
             # TODO: (https://github.com/CompVis/taming-transformers/tree/master#overview-of-pretrained-models)
@@ -55,11 +56,13 @@ class FrameMapper:
             # preprocess = preprocess_vqgan
             preprocess = lambda x: x  # dataloader preprocess
             tokenizer = lambda x: x
+            img_size = None
 
         self.model = model
         self.preprocess = preprocess
         self.tokenizer = tokenizer
         self.device = device
+        self.img_size = img_size
 
     def __call__(self, batch, captions=None):
         with torch.no_grad(), torch.cuda.amp.autocast():

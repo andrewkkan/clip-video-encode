@@ -6,6 +6,7 @@
 Easily compute clip embeddings from video frames.
 
 ## Install
+Assume you are using python<=3.10.  For this repo with the required pyarrow version, it [does not support 3.11 yet](https://stackoverflow.com/a/74295851).
 
 Using pip:
 ```
@@ -89,9 +90,9 @@ from clip_video_encode import clip_video_encode
 
 VIDS = glob.glob("some/path/my_videos/*.mp4")
 EMBEDDING_DIR = "some/path/my_embeddings"
-take_every_5 = 5
+take_every_nth = 5
 
-clip_video_encode(VIDS, EMBEDDING_DIR, take_every_5)
+clip_video_encode(src=VIDS, dest=EMBEDDING_DIR, take_every_nth=take_every_nth, model_name='ViT-L-14-336', pretrained='openai')
 ```
 
 ## Who is using clip-video-encode?

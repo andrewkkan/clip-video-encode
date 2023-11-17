@@ -5,6 +5,7 @@ import time
 
 import math
 import torch
+import open_clip
 
 from video2numpy.frame_reader import FrameReader
 
@@ -181,6 +182,10 @@ def clip_video_encode(
         starting_shard_id = int(shards[0].split("/")[-1].split(".tar")[0])
         writer = WebDatasetWriter(dest, oom_shard_count, "npy", maxcount=1e6, shard_id=starting_shard_id)
 
+    model_name_pretrained_mapping = {model_name: pretrained for model_name, pretrained in open_clip.list_pretrained()}
+    if model_name in model_name_pretrained_mapping:
+        pretrained = model_name_pretrained_mapping[model_name]
+
     fm = FrameMapper(
         model_name,
         pretrained,
@@ -188,6 +193,8 @@ def clip_video_encode(
         get_text_tokenizer=(caption_similarity or (captioning_strategy != "none")),
         get_frame_tokenizer=(frame_tokenization_strategy != "none"),
     )
+    if fm.img_size:
+        img_size = fm.img_size
 
     if input_format == "table":
         fr = FrameReader(
