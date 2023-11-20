@@ -62,6 +62,7 @@ def clip_video_encode(
     vid_ext="mp4",
     caption_similarity=False,
     img_size=224,
+    custom_writer: callable=None,
 ):
     """
     Encode frames using CLIP image encoder
@@ -174,13 +175,22 @@ def clip_video_encode(
         local_rank, global_rank, world_size = 0, 0, 1  # TODO: how do we do this?
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    assert output_format in ["files", "webdataset"]
+    if custom_writer is not None:
+        output_format = 'custom'
+    assert output_format in ["files", "webdataset", "custom"]
     if output_format == "files":
         writer = FileWriter(dest)
     elif output_format == "webdataset":
         # TODO: maybe include params for this?
         starting_shard_id = int(shards[0].split("/")[-1].split(".tar")[0])
         writer = WebDatasetWriter(dest, oom_shard_count, "npy", maxcount=1e6, shard_id=starting_shard_id)
+    elif output_format == "custom" and custom_writer is not None:
+        writer = custom_writer
+        try:
+            _ = getattr(writer, 'write')
+        except AttributeError:
+            print("Callable customer_writer is expected to have attribute function 'write' but it is not found.")
+            raise
 
     model_name_pretrained_mapping = {model_name: pretrained for model_name, pretrained in open_clip.list_pretrained()}
     if model_name in model_name_pretrained_mapping:

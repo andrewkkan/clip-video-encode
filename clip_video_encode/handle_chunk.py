@@ -28,6 +28,7 @@ def encode_chunk(
     vid_block = np.concatenate(frames)
     dl = block2dl(vid_block, mapper.preprocess, BATCH_SIZE, N_DATASET_WORKERS)
 
+    encode_out, vid_id_out, vid_meta_out = [], [], [] 
     with torch.no_grad():
         if captioning_strategy != "none":
             captions = []
@@ -50,6 +51,12 @@ def encode_chunk(
 
                 # TODO: we should be able to do both at once with a CoCa model
                 writer.write(None, vid_id, vid_meta)
+                
+                # encode_chunks outputs
+                encode_out.append(None)
+                vid_id_out.append(vid_id)
+                vid_meta_out.append(vid_meta)
+                
         elif frame_tokenization_strategy != "none":
             tokens = []
             for batch in dl:
@@ -72,6 +79,12 @@ def encode_chunk(
 
                 video_tokens = tokens[i0:it]
                 writer.write(video_tokens, vid_id, vid_meta)
+
+                # encode_chunks outputs
+                encode_out.append(video_tokens)
+                vid_id_out.append(vid_id)
+                vid_meta_out.append(vid_meta)
+
         else:
             embeddings = []
             for batch in dl:
@@ -111,3 +124,10 @@ def encode_chunk(
                     vid_meta["json"]["clip_frame_similarity"] = sim
 
                 writer.write(frame_embeddings, vid_id, vid_meta)
+
+                # encode_chunks outputs
+                encode_out.append(frame_embeddings)
+                vid_id_out.append(vid_id)
+                vid_meta_out.append(vid_meta)
+                
+    return encode_out, vid_id_out, vid_meta_out
