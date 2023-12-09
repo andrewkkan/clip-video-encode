@@ -1,7 +1,7 @@
 tqdm>=4.62.3,<5
 torch>=1.7.1,<=2
 numpy>=1.19.5,<2
-webdataset>=0.1.103,<0.2
+webdataset==0.2.86
 fire>=0.4.0,<0.5.0
 torchvision>=0.10.1,<2
 open-clip-torch>=2.0.0,<3.0.0
@@ -9,6 +9,6 @@ ffmpeg
 opencv-python
 youtube_dl
 video2numpy>=2.3.0,<2.4.0
-fsspec==2022.1.0
-pyarrow>=6.0.1,<8
-pandas>=1.1.5,<2
+fsspec==2023.12.1
+pyarrow==14
+pandas==2
