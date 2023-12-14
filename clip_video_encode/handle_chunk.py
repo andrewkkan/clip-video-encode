@@ -97,8 +97,9 @@ def encode_chunk(
                 # TODO: is there a better way of doing this?
                 # here we will compute similarity of empty string...
                 captions = [m["caption"] if "caption" in m else "" for m in meta]
-                caption_embs = mapper.encode_captions(captions)
-                caption_embs = caption_embs / np.linalg.norm(caption_embs, axis=-1)[:, None]
+                if "".join(captions) != "":
+                    caption_embs = mapper.encode_captions(captions)
+                    caption_embs = caption_embs / np.linalg.norm(caption_embs, axis=-1)[:, None]
 
             embeddings = np.concatenate(embeddings)
             for ref, (i0, it, dst_name) in ind_dict.items():

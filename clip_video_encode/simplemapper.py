@@ -45,7 +45,7 @@ class FrameMapper:
             model, _, preprocess = open_clip.create_model_and_transforms(
                 model_name, pretrained=pretrained, device=device
             )
-            tokenizer = open_clip.get_tokenizer(oc_model_name) if get_text_tokenizer else None
+            tokenizer = open_clip.get_tokenizer(model_name) if get_text_tokenizer else None
             img_size = preprocess.transforms[0].size
             preprocess.transforms = [ToPILImage()] + preprocess.transforms[-3:]
         else:

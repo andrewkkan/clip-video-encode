@@ -41,7 +41,7 @@ def extract_braceexpand_values(be_template, path):
 
 
 def clip_video_encode(
-    src,
+    src="",
     dest="",
     output_format="files",
     take_every_nth=25,
@@ -63,6 +63,7 @@ def clip_video_encode(
     caption_similarity=False,
     img_size=224,
     custom_writer: callable=None,
+    frame_mapper=None,
 ):
     """
     Encode frames using CLIP image encoder
@@ -112,7 +113,7 @@ def clip_video_encode(
       img_size:
         int: pixel height and width of target output shape
     """
-    assert input_format in ["table", "webdataset"]
+    assert input_format in ["table", "webdataset", "none"]
 
     if isinstance(metadata_columns, str):
         metadata_columns = [metadata_columns] if metadata_columns != "" else []
@@ -126,7 +127,7 @@ def clip_video_encode(
         vids, ids, meta = reader.get_data()
         meta_refs = list(range(len(vids)))
 
-    else:  # WebDataset, so we distribute shards
+    elif input_format == "webdataset":  # WebDataset, so we distribute shards
         shards = list(braceexpand.braceexpand(src))
 
         # NOTE: this might need to be improved, some shards may not be complete
@@ -196,13 +197,17 @@ def clip_video_encode(
     if model_name in model_name_pretrained_mapping:
         pretrained = model_name_pretrained_mapping[model_name]
 
-    fm = FrameMapper(
-        model_name,
-        pretrained,
-        device,
-        get_text_tokenizer=(caption_similarity or (captioning_strategy != "none")),
-        get_frame_tokenizer=(frame_tokenization_strategy != "none"),
-    )
+    if frame_mapper is None:
+        fm = FrameMapper(
+            model_name,
+            pretrained,
+            device,
+            get_text_tokenizer=(caption_similarity or (captioning_strategy != "none")),
+            get_frame_tokenizer=(frame_tokenization_strategy != "none"),
+        )
+    else:
+        fm = frame_mapper
+
     if fm.img_size:
         img_size = fm.img_size
 
@@ -237,7 +242,7 @@ def clip_video_encode(
 
         if len(frames) > 0:  # TODO: make this cleaner
             encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
-    else:  # WebDataset shard logic
+    elif input_format == "webdataset":  # WebDataset shard logic
         for shard in shards:
             try:
                 values = extract_braceexpand_values(src, shard)
@@ -342,6 +347,7 @@ def clip_video_encode(
             except Exception as e:  # pylint: disable=(broad-except)
                 print(f"Shard {shard} failed: {str(e)}")
 
+    return fm
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
