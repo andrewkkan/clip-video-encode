@@ -40,7 +40,7 @@ def extract_braceexpand_values(be_template, path):
     return list(match.groups())
 
 
-def clip_video_encode(
+async def clip_video_encode(
     src="",
     dest="",
     output_format="files",
@@ -237,11 +237,11 @@ def clip_video_encode(
             block_size += vid_frames.shape[0]
 
             if i % CHUNK_SIZE == 0:
-                encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
+                await encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
                 frames, ind_dict, block_size = [], {}, 0
 
         if len(frames) > 0:  # TODO: make this cleaner
-            encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
+            await encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
     elif input_format == "webdataset":  # WebDataset shard logic
         for shard in shards:
             try:
@@ -307,7 +307,7 @@ def clip_video_encode(
                         t = time.time()
 
                         if i % CHUNK_SIZE == 0:
-                            encode_chunk(
+                            await encode_chunk(
                                 frames,
                                 ind_dict,
                                 writer,  # TODO: turn all args below this into kwarg dict and just unpack
@@ -326,7 +326,7 @@ def clip_video_encode(
                             frames, ind_dict, block_size = [], {}, 0
                     t = time.time()
                     if len(frames) > 0:  # TODO: make this cleaner
-                        encode_chunk(
+                        await encode_chunk(
                             frames,
                             ind_dict,
                             writer,

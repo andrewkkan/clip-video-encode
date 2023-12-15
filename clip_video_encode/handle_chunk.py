@@ -10,7 +10,7 @@ BATCH_SIZE = 128
 N_DATASET_WORKERS = 6
 
 
-def encode_chunk(
+async def encode_chunk(
     frames,
     ind_dict,
     writer,
@@ -50,7 +50,7 @@ def encode_chunk(
                 vid_meta["json"][generated_caption_key] = captions[i0:it][0]
 
                 # TODO: we should be able to do both at once with a CoCa model
-                writer.write(None, vid_id, vid_meta)
+                await writer.write(None, vid_id, vid_meta)
                 
                 # encode_chunks outputs
                 encode_out.append(None)
@@ -78,7 +78,7 @@ def encode_chunk(
                         vid_meta["txt"] = vid_meta["json"]["caption"]
 
                 video_tokens = tokens[i0:it]
-                writer.write(video_tokens, vid_id, vid_meta)
+                await writer.write(video_tokens, vid_id, vid_meta)
 
                 # encode_chunks outputs
                 encode_out.append(video_tokens)
@@ -124,7 +124,7 @@ def encode_chunk(
                     vid_meta["json"] = vid_meta["json"] if "json" in vid_meta else {}
                     vid_meta["json"]["clip_frame_similarity"] = sim
 
-                writer.write(frame_embeddings, vid_id, vid_meta)
+                await writer.write(frame_embeddings, vid_id, vid_meta)
 
                 # encode_chunks outputs
                 encode_out.append(frame_embeddings)
