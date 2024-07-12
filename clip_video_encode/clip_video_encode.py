@@ -64,6 +64,7 @@ async def clip_video_encode(
     img_size=224,
     custom_writer: callable=None,
     frame_mapper=None,
+    low_pri=False,
 ):
     """
     Encode frames using CLIP image encoder
@@ -112,6 +113,8 @@ async def clip_video_encode(
         bool: whether to put the similarity between the average frame embedding and text embedding into metadata
       img_size:
         int: pixel height and width of target output shape
+      low_pri:
+        bool: whether to sleep for 0 seconds between processing chunks to give other coroutines a chance to run
     """
     assert input_format in ["table", "webdataset", "none"]
 
@@ -237,11 +240,11 @@ async def clip_video_encode(
             block_size += vid_frames.shape[0]
 
             if i % CHUNK_SIZE == 0:
-                await encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
+                await encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format, low_pri=low_pri)
                 frames, ind_dict, block_size = [], {}, 0
 
         if len(frames) > 0:  # TODO: make this cleaner
-            await encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format)
+            await encode_chunk(frames, ind_dict, writer, fm, meta, ids, use_dst_name, device, input_format=input_format, low_pri=low_pri)
     elif input_format == "webdataset":  # WebDataset shard logic
         for shard in shards:
             try:
@@ -320,6 +323,7 @@ async def clip_video_encode(
                                 captioning_strategy=captioning_strategy,
                                 frame_tokenization_strategy=frame_tokenization_strategy,
                                 generated_caption_key=generated_caption_key,
+                                low_pri=low_pri,
                             )
                             times["encode"] = times.get("encode", 0) + time.time() - t
                             t = time.time()
@@ -339,6 +343,7 @@ async def clip_video_encode(
                             captioning_strategy=captioning_strategy,
                             frame_tokenization_strategy=frame_tokenization_strategy,
                             generated_caption_key=generated_caption_key,
+                            low_pri=low_pri,
                         )
                     times["encode"] = times.get("encode", 0) + time.time() - t
                     t = time.time()
