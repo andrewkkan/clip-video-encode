@@ -5,14 +5,12 @@ import open_clip
 
 from torchvision.transforms import ToPILImage
 
-try:
-    from omegaconf import OmegaConf
-    from taming.models.vqgan import VQModel, GumbelVQ
-except ImportError as e:
-    print("Missing imports")
-
 
 def load_config(config_path, display=False):
+    try:
+        from omegaconf import OmegaConf
+    except ImportError as e:
+        print("Missing imports")
     config = OmegaConf.load(config_path)
     if display:
         print(yaml.dump(OmegaConf.to_container(config)))
@@ -20,6 +18,10 @@ def load_config(config_path, display=False):
 
 
 def load_vqgan(config, ckpt_path=None, is_gumbel=False):
+    try:
+        from taming.models.vqgan import VQModel, GumbelVQ
+    except ImportError as e:
+        print("Missing imports")
     if is_gumbel:
         model = GumbelVQ(**config.model.params)
     else:
