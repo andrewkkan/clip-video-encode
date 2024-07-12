@@ -36,7 +36,7 @@ async def encode_chunk(
             captions = []
             for batch in dl:
                 if low_pri:
-                    asyncio.sleep(0)
+                    await asyncio.sleep(0)
                 captions += mapper.generate_captions(batch.to(device))
 
             for ref, (i0, it, dst_name) in ind_dict.items():
@@ -65,7 +65,7 @@ async def encode_chunk(
             tokens = []
             for batch in dl:
                 if low_pri:
-                    asyncio.sleep(0)
+                    await asyncio.sleep(0)
                 batch = batch.permute(0, 3, 1, 2).float() / 255.0  # make channel first and [0, 1]
                 indices = mapper.tokenize_frames(batch.to(device))
                 tokens.append(indices)
@@ -95,7 +95,7 @@ async def encode_chunk(
             embeddings = []
             for batch in dl:
                 if low_pri:
-                    asyncio.sleep(0)
+                    await asyncio.sleep(0)
                 with torch.cuda.amp.autocast():
                     emb = mapper(batch.to(device))
                     embeddings.append(emb)
