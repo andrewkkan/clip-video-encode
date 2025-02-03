@@ -96,7 +96,7 @@ async def encode_chunk(
             for batch in dl:
                 if low_pri:
                     await asyncio.sleep(0)
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast('cuda'):
                     emb = mapper(batch.to(device))
                     embeddings.append(emb)
 

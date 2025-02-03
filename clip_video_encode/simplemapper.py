@@ -67,7 +67,7 @@ class FrameMapper:
         self.img_size = img_size
 
     def __call__(self, batch, captions=None):
-        with torch.no_grad(), torch.cuda.amp.autocast():
+        with torch.no_grad(), torch.amp.autocast('cuda'):
             embeddings = self.model.encode_image(batch).cpu().detach().numpy()
         return embeddings
 
